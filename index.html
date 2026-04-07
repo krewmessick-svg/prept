@@ -692,29 +692,29 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
 <!-- SCREEN: WAITLIST                              -->
 <!-- ══════════════════════════════════════════════ -->
 <div class="screen" id="screen-waitlist">
-  <div style="text-align:center;font-size:40px;margin-bottom:4px">🏆</div>
+  <div style="text-align:center;font-size:40px;margin-bottom:4px">🔥</div>
   <div>
-    <div class="lbl" style="text-align:center">Session Complete</div>
-    <div class="waitlist-hero" style="text-align:center">YOU'RE<br/>PUTTING IN<br/><span class="blue">THE WORK.</span></div>
-    <div class="sub" style="text-align:center">Get your personalized plan delivered every day. Join the Prept waitlist and be first when we launch.</div>
+    <div class="lbl" style="text-align:center">Your free month is up</div>
+    <div class="waitlist-hero" style="text-align:center">DON'T LOSE<br/>YOUR<br/><span class="blue">STREAK.</span></div>
+    <div class="sub" style="text-align:center">You've been putting in real work. Drop your email and lock in your spot before we launch — early access pricing, locked in forever.</div>
   </div>
-  <div style="background:var(--gray);border:1px solid var(--border);border-radius:8px;padding:14px;display:flex;flex-direction:column;gap:10px">
-    <div class="lbl" style="margin-bottom:0">What you'll get</div>
-    <div style="display:flex;flex-direction:column;gap:8px">
-      <div class="wl-benefit"><span class="wl-check">✓</span> Daily AI-generated D1 workouts</div>
-      <div class="wl-benefit"><span class="wl-check">✓</span> Full nutrition & calorie plans</div>
-      <div class="wl-benefit"><span class="wl-check">✓</span> Session history & streak tracking</div>
-      <div class="wl-benefit"><span class="wl-check">✓</span> Auto pre-game mode on game days</div>
-      <div class="wl-benefit"><span class="wl-check">✓</span> Early access pricing — locked in forever</div>
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:10px">
+    <div class="lbl" style="margin-bottom:0">What you keep</div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div class="wl-benefit"><span class="wl-check">✓</span> Daily personalized D1 workouts — built for your position</div>
+      <div class="wl-benefit"><span class="wl-check">✓</span> Full nutrition & macro plans every session</div>
+      <div class="wl-benefit"><span class="wl-check">✓</span> Your session history, streaks & progress</div>
+      <div class="wl-benefit"><span class="wl-check">✓</span> Pre-game mode, recovery mode, full drill library</div>
+      <div class="wl-benefit"><span class="wl-check">✓</span> Early access pricing — cheaper than anyone who joins after you</div>
     </div>
   </div>
   <div>
     <div class="lbl">Your Email</div>
     <input type="email" class="email-input" id="email-input" placeholder="your@email.com"/>
   </div>
-  <button class="btn" onclick="submitWaitlist()">JOIN THE WAITLIST →</button>
-  <button class="btn btn-outline" style="opacity:.6" onclick="showTab('train')">Maybe Later</button>
-  <div id="waitlist-confirm" style="display:none;text-align:center;font-family:'DM Mono',monospace;font-size:12px;color:var(--green);padding:8px">✓ You're on the list. We'll be in touch.</div>
+  <button class="btn" onclick="submitWaitlist()">LOCK IN MY SPOT →</button>
+  <button class="btn btn-outline" style="opacity:.5" onclick="showTab('train')">I'll do it later</button>
+  <div id="waitlist-confirm" style="display:none;text-align:center;font-family:'DM Mono',monospace;font-size:12px;color:var(--green);padding:8px">✓ You're locked in. We'll hit you when we launch.</div>
 </div>
 
 <!-- ══════════════════════════════════════════════ -->
@@ -1432,8 +1432,9 @@ function onSessionComplete(){
   const used = sessionsUsed() + 1;
   try{ localStorage.setItem("prept_sessions_used", String(used)); }catch(e){}
 
-  // Soft waitlist after session 1
-  if(!waitlistShown && !localStorage.getItem("prept_waitlist_shown")){
+  // Waitlist screen only shows when FREE_MONTH is off
+  // During free month users get unlimited access — no popup
+  if(!FREE_MONTH && !waitlistShown && !localStorage.getItem("prept_waitlist_shown")){
     waitlistShown=true;
     try{ localStorage.setItem("prept_waitlist_shown","1"); }catch(e){}
     setTimeout(()=>{ showScreen("waitlist"); document.getElementById("main-nav").style.display="flex"; },1800);

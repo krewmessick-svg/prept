@@ -372,6 +372,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
     <div class="badge dim" id="name-badge" style="display:none"></div>
     <div class="badge dim" id="age-badge" style="display:none"></div>
     <div class="badge clickable" id="streak-badge" onclick="showTab('history')">🔥 <span id="streak-num">0</span>-day</div>
+    <button class="theme-toggle" onclick="showTab('settings')" title="Edit profile" style="background:var(--gray2);border:1px solid var(--border);border-radius:20px;padding:4px 9px;font-size:13px;cursor:pointer;transition:all .15s;line-height:1">⚙️</button>
   </div>
 </div>
 
@@ -448,12 +449,6 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
   <div>
     <div class="lbl">Position</div>
     <div class="g5" id="pos-grid"></div>
-  </div>
-
-  <!-- EQUIPMENT -->
-  <div>
-    <div class="lbl">What do you have to work with?</div>
-    <div class="g2" id="equip-grid"></div>
   </div>
 
   <button class="btn" id="btn-onboard" disabled onclick="showScreen('nutrition')">CONTINUE →</button>
@@ -563,6 +558,13 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
 
     <!-- FOCUS AREAS -->
     <div>
+      <!-- GOALS -->
+      <div>
+        <div class="lbl">Current Goal</div>
+        <div class="tgrid" id="goal-grid"></div>
+        <input type="text" class="name-input" id="goal-custom" placeholder="Or type something specific..." maxlength="80" style="margin-top:8px;font-size:13px;font-weight:500;text-align:left;padding:12px 14px" oninput="updCustomGoal()"/>
+      </div>
+
       <div class="lbl">Focus Today <span style="font-weight:400;letter-spacing:0;text-transform:none;font-size:10px;color:var(--muted)">(pick up to 3)</span></div>
       <div class="tgrid" id="focus-grid"></div>
     </div>
@@ -580,6 +582,28 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
     <div>
       <div class="lbl">Game Days <span style="font-weight:400;letter-spacing:0;text-transform:none;font-size:10px;color:var(--muted)">(auto-switches to pre-game mode)</span></div>
       <div class="day-grid" id="day-grid"></div>
+    </div>
+
+    <!-- NUTRITION -->
+    <div>
+      <div class="lbl">Today's Fuel Goal</div>
+      <div class="g2" id="checkin-nutr-grid"></div>
+    </div>
+    <div id="checkin-wt-row">
+      <div class="lbl">Body Weight</div>
+      <div class="unit-row">
+        <input type="number" class="num-input" id="checkin-wt-input" placeholder="185" min="50" max="500" style="font-size:16px;padding:12px 14px" oninput="updCheckinNutr()"/>
+        <div class="utog">
+          <button class="ubtn on" id="checkin-u-lbs" onclick="setCheckinUnit('lbs')">lbs</button>
+          <button class="ubtn" id="checkin-u-kg" onclick="setCheckinUnit('kg')">kg</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- EQUIPMENT -->
+    <div>
+      <div class="lbl">What do you have today?</div>
+      <div class="g2" id="equip-grid"></div>
     </div>
 
     <!-- BUILD BTN -->
@@ -688,14 +712,14 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
   <!-- ACTIONS -->
   <div class="btn-row">
     <button class="btn-sm sec" onclick="showTab('train')">← Check-In</button>
-    <button class="btn-sm pri" onclick="generate(false)">Regenerate ↺</button>
+    <button class="btn-sm pri" onclick="regenWorkout()">Regenerate ↺</button>
   </div>
   <button class="btn btn-green" id="share-btn" onclick="showShare()" style="font-size:17px">📸 SHARE THIS WORKOUT</button>
 
   <div id="complete-banner" style="display:none" class="cbanner">
     <div class="ctitle">SESSION COMPLETE 🏆</div>
     <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);margin-bottom:14px">Streak updated. Keep going.</div>
-    <button class="btn" style="font-size:17px" onclick="showTab('train')">START NEW SESSION →</button>
+    <button class="btn" style="font-size:17px" onclick="currentWorkout=null;showTab('train')">START NEW SESSION →</button>
   </div>
 </div>
 
@@ -813,9 +837,70 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
 </div>
 
 <!-- ══════════════════════════════════════════════ -->
+<!-- SCREEN: SETTINGS                              -->
+<!-- ══════════════════════════════════════════════ -->
+<div class="screen" id="screen-settings">
+  <div>
+    <div class="lbl">Your Profile</div>
+    <div class="hero" style="font-size:40px;line-height:.93">EDIT YOUR<br/><span class="blue">INFO.</span></div>
+  </div>
+
+  <!-- NAME -->
+  <div>
+    <div class="lbl">First Name</div>
+    <input type="text" class="name-input" id="settings-name" placeholder="Your name" maxlength="20"/>
+  </div>
+
+  <!-- DOB -->
+  <div>
+    <div class="lbl">Date of Birth</div>
+    <div class="date-grid">
+      <div><div class="col-lbl">Month</div><div class="pw"><div class="sl"></div><div class="pft"></div><div class="pfb"></div><div class="pi" id="s-pi-month"></div></div></div>
+      <div><div class="col-lbl">Day</div><div class="pw"><div class="sl"></div><div class="pft"></div><div class="pfb"></div><div class="pi" id="s-pi-day"></div></div></div>
+      <div><div class="col-lbl">Year</div><div class="pw"><div class="sl"></div><div class="pft"></div><div class="pfb"></div><div class="pi" id="s-pi-year"></div></div></div>
+    </div>
+    <div class="age-res" id="s-age-res" style="display:none">
+      <div class="age-n" id="s-age-n"></div>
+      <div><div style="font-size:13px;font-weight:600" id="s-age-tier"></div><div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted)">age-calibrated training</div></div>
+    </div>
+  </div>
+
+  <!-- GENDER -->
+  <div>
+    <div class="lbl">Gender</div>
+    <div class="g3" id="settings-gender-grid"></div>
+  </div>
+
+  <!-- HEIGHT -->
+  <div>
+    <div class="lbl">Height</div>
+    <div class="ht-grid">
+      <div><div class="col-lbl">Feet</div><div class="pw"><div class="sl"></div><div class="pft"></div><div class="pfb"></div><div class="pi" id="s-pi-ft"></div></div></div>
+      <div><div class="col-lbl">Inches</div><div class="pw"><div class="sl"></div><div class="pft"></div><div class="pfb"></div><div class="pi" id="s-pi-in"></div></div></div>
+    </div>
+    <div id="s-ht-display" style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);margin-top:6px;text-align:center"></div>
+  </div>
+
+  <!-- EXPERIENCE -->
+  <div>
+    <div class="lbl">Years Playing</div>
+    <div class="g2" id="settings-exp-grid"></div>
+  </div>
+
+  <!-- POSITION -->
+  <div>
+    <div class="lbl">Position</div>
+    <div class="g5" id="settings-pos-grid"></div>
+  </div>
+
+  <button class="btn" onclick="saveSettings()">SAVE CHANGES →</button>
+  <div id="settings-confirm" style="display:none;text-align:center;font-family:'DM Mono',monospace;font-size:12px;color:var(--green);padding:8px">✓ Profile updated.</div>
+</div>
+
+<!-- ══════════════════════════════════════════════ -->
 <!-- SCREEN: SHOT COACH                            -->
 <!-- ══════════════════════════════════════════════ -->
-<div class="screen" id="screen-shotcoach" style="padding:16px 16px 0;gap:0;height:calc(100vh - 130px);display:none;flex-direction:column">
+<div class="screen" id="screen-shotcoach" style="padding:16px 16px 0;gap:0">
   <div style="margin-bottom:14px">
     <div class="lbl">Shot Coach</div>
     <div class="hero" style="font-size:38px;line-height:.93">FIX YOUR<br/><span class="blue">SHOT.</span></div>
@@ -934,6 +1019,10 @@ const NUTR_GOALS = [
    ]},
 ];
 
+const GOALS = [
+  "Get Faster","Build Strength","Improve Shooting","Better Ball Handling",
+  "Get More Athletic","Prepare for Tryouts","Stay Sharp In Season","Improve Defense",
+];
 const FOCUS_AREAS = ["Ball Handling","Shooting","Finishing","Defense","Footwork","IQ/Film","Conditioning"];
 const TIME_OPTS   = ["20 min","30 min","45 min","60 min"];
 const DRILL_N     = {"20 min":4,"30 min":5,"45 min":7,"60 min":8};
@@ -1007,6 +1096,7 @@ let expLevel="competitive", position="SG";
 let equipment="full"; // full | no-hoop | gym-only
 let wtLbs=0, wtUnit="lbs", nutrGoal="performance";
 let energy=7, soreness=3, focusSelected=[], timeSelected="45 min";
+let selectedGoal="", customGoal="";
 let sessionMode="normal";
 let gameDays=new Set();
 let waitlistShown=false;
@@ -1129,7 +1219,6 @@ function buildPCards(containerId, items, activeId, onSelect){
 buildCards("gender-grid", GENDERS, gender, v=>gender=v);
 buildCards("exp-grid",    EXPS,    expLevel, v=>expLevel=v);
 buildPCards("pos-grid",   POSITIONS, position, v=>position=v);
-buildCards("equip-grid",  EQUIPMENT, equipment, v=>equipment=v);
 
 // ══ NUTRITION SETUP ════════════════════════════════════
 buildCards("nutr-grid", NUTR_GOALS, nutrGoal, v=>{nutrGoal=v;updateNutr();}, "card");
@@ -1177,6 +1266,32 @@ function updateNutr(){
 }
 
 // ══ FOCUS / TIME / MODE ════════════════════════════════
+// Build goal tags
+const gg=document.getElementById("goal-grid");
+GOALS.forEach(g=>{
+  const b=document.createElement("button"); b.className="tag"; b.textContent=g;
+  b.onclick=()=>{
+    if(selectedGoal===g){
+      selectedGoal=""; b.classList.remove("on");
+    } else {
+      selectedGoal=g;
+      document.querySelectorAll("#goal-grid .tag").forEach(t=>t.classList.remove("on"));
+      b.classList.add("on");
+      document.getElementById("goal-custom").value="";
+      customGoal="";
+    }
+  };
+  gg.appendChild(b);
+});
+
+function updCustomGoal(){
+  customGoal=document.getElementById("goal-custom").value.trim();
+  if(customGoal){
+    selectedGoal="";
+    document.querySelectorAll("#goal-grid .tag").forEach(t=>t.classList.remove("on"));
+  }
+}
+
 const fg=document.getElementById("focus-grid");
 FOCUS_AREAS.forEach(f=>{
   const b=document.createElement("button"); b.className="tag"; b.textContent=f;
@@ -1196,6 +1311,39 @@ TIME_OPTS.forEach(t=>{
 
 // ══ GAME SCHEDULE ════════════════════════════════════
 const DAYS_OF_WEEK = ["Su","Mo","Tu","We","Th","Fr","Sa"];
+function buildEquipGrid(){
+  const el=document.getElementById("equip-grid");
+  if(!el) return;
+  el.innerHTML="";
+  buildCards("equip-grid", EQUIPMENT, equipment, v=>equipment=v);
+}
+
+function buildCheckinNutrGrid(){
+  const el=document.getElementById("checkin-nutr-grid");
+  if(!el) return;
+  el.innerHTML="";
+  buildCards("checkin-nutr-grid", NUTR_GOALS, nutrGoal, v=>{nutrGoal=v;});
+  // Pre-fill weight
+  const wtEl=document.getElementById("checkin-wt-input");
+  if(wtEl && wtLbs>0) wtEl.value=wtLbs;
+  // Set unit buttons
+  const lbsBtn=document.getElementById("checkin-u-lbs");
+  const kgBtn=document.getElementById("checkin-u-kg");
+  if(lbsBtn) lbsBtn.classList.toggle("on",wtUnit==="lbs");
+  if(kgBtn) kgBtn.classList.toggle("on",wtUnit==="kg");
+}
+
+function setCheckinUnit(u){
+  wtUnit=u;
+  document.getElementById("checkin-u-lbs").classList.toggle("on",u==="lbs");
+  document.getElementById("checkin-u-kg").classList.toggle("on",u==="kg");
+}
+
+function updCheckinNutr(){
+  const raw=parseFloat(document.getElementById("checkin-wt-input").value)||0;
+  wtLbs=raw;
+}
+
 function buildDayGrid(){
   const el=document.getElementById("day-grid");
   if(!el||el.children.length>0) return; // already built
@@ -1278,7 +1426,7 @@ function showScreen(name){
     document.getElementById("main-nav").style.display="none";
   } else {
     progEl.style.display="none"; divEl.style.display="none";
-    document.getElementById("main-nav").style.display=["checkin","workout","history","library","share","preview","gate","shotcoach"].includes(name)?"flex":"none";
+    document.getElementById("main-nav").style.display=["checkin","workout","history","library","share","preview","gate","shotcoach","settings"].includes(name)?"flex":"none";
   }
   window.scrollTo(0,0);
 }
@@ -1286,14 +1434,16 @@ function showScreen(name){
 function showTab(tab){
   currentTab=tab;
   ["train","library","history","shotcoach"].forEach(t=>{
-    document.getElementById("nav-"+t).classList.toggle("active",t===tab);
+    const el=document.getElementById("nav-"+t);
+    if(el) el.classList.toggle("active",t===tab);
   });
   if(tab==="train"){
     if(currentWorkout) showScreen("workout");
-    else { showScreen("checkin"); setTimeout(()=>{ buildDayGrid(); updGreeting(); checkAutoPreGame(); },50); }
+    else { showScreen("checkin"); setTimeout(()=>{ buildDayGrid(); buildEquipGrid(); buildCheckinNutrGrid(); updGreeting(); checkAutoPreGame(); },50); }
   } else if(tab==="library")   { buildLibrary(); showScreen("library"); }
   else if(tab==="history")     { buildHistory(); showScreen("history"); }
   else if(tab==="shotcoach")   { showScreen("shotcoach"); initShotCoach(); }
+  else if(tab==="settings")    { initSettings(); showScreen("settings"); }
 }
 
 // ══ GENERATE ═══════════════════════════════════════════
@@ -1360,7 +1510,7 @@ async function generateFromPreview(isRecovery){
   const modeStr=isRecovery?"RECOVERY SESSION":sessionMode==="pregame"?"PRE-GAME ACTIVATION":"TRAINING SESSION";
   const playerName=firstName?firstName:"the player";
   const prompt=`You are a D1/NBA private basketball trainer. Generate a ${modeStr}.
-Equipment available: ${equipment==='full'?'Full court + hoop':equipment==='hoop'?'Hoop only (no full court)':equipment==='ball'?'Basketball only — NO HOOP':' No equipment — bodyweight only'}. Player name: ${playerName}. ${age}yo ${gender}, ${tier.label}, ${heightFt}'${heightIn}" tall, position: ${position}, ${exp.label} (${exp.sub}), energy ${energy}/10, soreness ${soreness}/10, focus: ${focusSelected.length?focusSelected.join(", "):"full game"}.
+Player's current goal: ${customGoal||selectedGoal||'general improvement'}. Equipment available: ${equipment==='full'?'Full court + hoop':equipment==='hoop'?'Hoop only (no full court)':equipment==='ball'?'Basketball only — NO HOOP':' No equipment — bodyweight only'}. Player name: ${playerName}. ${age}yo ${gender}, ${tier.label}, ${heightFt}'${heightIn}" tall, position: ${position}, ${exp.label} (${exp.sub}), energy ${energy}/10, soreness ${soreness}/10, focus: ${focusSelected.length?focusSelected.join(", "):"full game"}.
 ${isRecovery?"RECOVERY MODE: Mobility, stretching, light skill only. No running or jumping.":""}
 ${sessionMode==="pregame"?"PRE-GAME MODE: Activation only. Light shooting, footwork, mental prep.":""}
 OUTPUT EXACTLY ${n} DRILLS. Real named drills only. Seed: ${seed}.
@@ -1402,7 +1552,7 @@ async function generate(isRecovery){
 
   const playerName=firstName?firstName:"the player";
   const prompt=`You are a D1/NBA private basketball trainer. Generate a ${modeStr}.
-Equipment available: ${equipment==='full'?'Full court + hoop':equipment==='hoop'?'Hoop only (no full court)':equipment==='ball'?'Basketball only — NO HOOP':' No equipment — bodyweight only'}. Player name: ${playerName}. ${age}yo ${gender}, ${tier.label}, ${heightFt}'${heightIn}" tall, position: ${position}, ${exp.label} (${exp.sub}), energy ${energy}/10, soreness ${soreness}/10, focus: ${focusSelected.length?focusSelected.join(", "):"full game"}.
+Player's current goal: ${customGoal||selectedGoal||'general improvement'}. Equipment available: ${equipment==='full'?'Full court + hoop':equipment==='hoop'?'Hoop only (no full court)':equipment==='ball'?'Basketball only — NO HOOP':' No equipment — bodyweight only'}. Player name: ${playerName}. ${age}yo ${gender}, ${tier.label}, ${heightFt}'${heightIn}" tall, position: ${position}, ${exp.label} (${exp.sub}), energy ${energy}/10, soreness ${soreness}/10, focus: ${focusSelected.length?focusSelected.join(", "):"full game"}.
 ${isRecovery?"RECOVERY MODE: Mobility, stretching, light skill only. No running or jumping.":""}
 ${sessionMode==="pregame"?"PRE-GAME MODE: Activation only. Light shooting, footwork, mental prep. Keep intensity moderate, 20-25 min total work.":""}
 OUTPUT EXACTLY ${n} DRILLS. Real named drills only. Seed: ${seed}.
@@ -1433,6 +1583,14 @@ Reply ONLY with JSON: {"sessionTitle":"CAPS TITLE","warmup":"sentence","drills":
 }
 
 // ══ LOCAL WORKOUT GENERATOR ════════════════════════════
+let regenCount = 0;
+function regenWorkout(){
+  regenCount++;
+  // Clear last drills to force new selection
+  window._lastDrills = [];
+  buildPreview(previewIsRecovery||false);
+}
+
 function localWorkout(isRecovery){
   const n=isRecovery?5:(sessionMode==="pregame"?4:DRILL_N[timeSelected]||6);
   const posCats={PG:["handles","footwork","shooting","finishing"],SG:["shooting","handles","finishing","footwork"],SF:["finishing","shooting","footwork","handles"],PF:["finishing","footwork","shooting","handles"],C:["finishing","footwork","handles","shooting"]};
@@ -1453,13 +1611,38 @@ function localWorkout(isRecovery){
     }
   }
 
-  const used=new Set(); const drills=[]; let ci=Math.floor(Math.random()*cats.length);
-  while(drills.length<n){
-    const cat=cats[ci%cats.length]; const bank=ALL_DRILLS[cat]||ALL_DRILLS.handles;
-    const avail=bank.filter(d=>!used.has(d.name));
-    if(avail.length){const pick=avail[Math.floor(Math.random()*avail.length)];used.add(pick.name);drills.push({...pick});}
-    ci++; if(ci>cats.length*30) break;
+  // Shuffle helper — Fisher-Yates
+  function shuffle(arr){
+    const a=[...arr];
+    for(let i=a.length-1;i>0;i--){
+      const j=Math.floor(Math.random()*(i+1));
+      [a[i],a[j]]=[a[j],a[i]];
+    }
+    return a;
   }
+
+  // Shuffle cats with regenCount offset for true variety each time
+  const shuffledCats = shuffle(cats).map((cat,i)=>cats[(cats.indexOf(cat)+regenCount+i)%cats.length]||cat);
+
+  const used=new Set();
+  // Avoid repeating last session's drills
+  if(window._lastDrills) window._lastDrills.forEach(d=>used.add(d));
+  const drills=[];
+  let ci=0;
+  while(drills.length<n){
+    const cat=shuffledCats[ci%shuffledCats.length];
+    const bank=shuffle(ALL_DRILLS[cat]||ALL_DRILLS.handles);
+    const avail=bank.filter(d=>!used.has(d.name));
+    if(avail.length){
+      const pick=avail[0]; // first after shuffle = random
+      used.add(pick.name);
+      drills.push({...pick});
+    }
+    ci++;
+    if(ci>shuffledCats.length*30) break;
+  }
+  // Remember these drills to avoid next time
+  window._lastDrills = drills.map(d=>d.name);
 
   const titles=isRecovery?["RECOVERY DAY","ACTIVE REST","BODY RESET","MOBILITY WORK"]:sessionMode==="pregame"?["GAME DAY READY","ACTIVATION","LOCK IN","RISE UP"]:["ATTACK THE RACK","SKILL & WILL","LOCK IN","GAME SPEED WORK","STAY READY","GRIND SESSION","NO DAYS OFF","WORK PERIOD"];
   const warmups=isRecovery?["Light walk, joint circles, slow arm swings — 3 min. Keep it easy."]
@@ -1691,6 +1874,83 @@ function showShare(){
 }
 
 // Dark mode locked — always dark
+
+// ══ SETTINGS ══════════════════════════════════════════
+let settingsInited = false;
+
+function initSettings(){
+  // Always rebuild with current values
+  document.getElementById("settings-name").value = firstName;
+
+  // Gender grid
+  const gg = document.getElementById("settings-gender-grid");
+  gg.innerHTML = "";
+  buildCards("settings-gender-grid", GENDERS, gender, v=>{ gender=v; });
+
+  // Exp grid
+  const eg = document.getElementById("settings-exp-grid");
+  eg.innerHTML = "";
+  buildCards("settings-exp-grid", EXPS, expLevel, v=>{ expLevel=v; });
+
+  // Pos grid
+  const pg = document.getElementById("settings-pos-grid");
+  pg.innerHTML = "";
+  buildPCards("settings-pos-grid", POSITIONS, position, v=>{ position=v; });
+
+  // Pickers — rebuild each time
+  ["s-pi-month","s-pi-day","s-pi-year","s-pi-ft","s-pi-in"].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.innerHTML="";
+  });
+
+  buildPicker("s-pi-month",Array.from({length:12},(_,i)=>i+1),dobM,m=>MO[m-1],v=>{dobM=v;updSAge();});
+  buildPicker("s-pi-day",  Array.from({length:31},(_,i)=>i+1),dobD,d=>String(d).padStart(2,"0"),v=>{dobD=v;updSAge();});
+  buildPicker("s-pi-year", Array.from({length:60},(_,i)=>CY-i),dobY,null,v=>{dobY=v;updSAge();});
+  buildPicker("s-pi-ft",   [4,5,6,7],heightFt,v=>v+"'",v=>{heightFt=v;updSHt();});
+  buildPicker("s-pi-in",   Array.from({length:12},(_,i)=>i),heightIn,v=>v+'"',v=>{heightIn=v;updSHt();});
+
+  updSAge(); updSHt();
+  document.getElementById("settings-confirm").style.display="none";
+}
+
+function updSAge(){
+  const age=calcAge();
+  const res=document.getElementById("s-age-res");
+  if(age>=5&&age<=80){
+    const t=ageTier(age);
+    document.getElementById("s-age-n").textContent=age;
+    document.getElementById("s-age-n").style.color=t.color;
+    document.getElementById("s-age-tier").textContent=t.label;
+    document.getElementById("s-age-tier").style.color=t.color;
+    res.style.display="flex";
+  } else { res.style.display="none"; }
+}
+
+function updSHt(){
+  const totalIn=heightFt*12+heightIn;
+  const cm=Math.round(totalIn*2.54);
+  const el=document.getElementById("s-ht-display");
+  if(el) el.textContent=heightFt+"'"+heightIn+'"  /  '+cm+" cm";
+}
+
+function saveSettings(){
+  firstName = document.getElementById("settings-name").value.trim() || firstName;
+  try{
+    localStorage.setItem("prept_setup",JSON.stringify({
+      dobM,dobD,dobY,gender,htFt:heightFt,htIn:heightIn,
+      exp:expLevel,pos:position,wt:wtLbs,nutr:nutrGoal,name:firstName
+    }));
+  }catch(e){}
+  updGreeting();
+  // Update header badges
+  const nb=document.getElementById("name-badge");
+  const ab=document.getElementById("age-badge");
+  if(nb){ nb.textContent=firstName||""; nb.style.display=firstName?"block":"none"; }
+  const age=calcAge(); const t=ageTier(age);
+  if(ab){ ab.textContent=age+"y · "+t.label; ab.style.color=t.color; ab.style.display="block"; }
+  document.getElementById("settings-confirm").style.display="block";
+  setTimeout(()=>showTab("train"),1500);
+}
 
 // ══ SHOT COACH ════════════════════════════════════════
 const SC_EXAMPLES = [
@@ -1997,7 +2257,7 @@ if(isSetup){
     firstName=s.name||firstName;
     updAge();
     showScreen("checkin");
-    setTimeout(()=>{ buildDayGrid(); updGreeting(); checkAutoPreGame(); },100);
+    setTimeout(()=>{ buildDayGrid(); buildEquipGrid(); buildCheckinNutrGrid(); updGreeting(); checkAutoPreGame(); },100);
     document.getElementById("main-nav").style.display="flex";
     document.getElementById("onboard-prog").style.display="none";
     document.getElementById("top-divider").style.display="none";
